@@ -224,7 +224,7 @@ async def on_message(message):
       with open(bank_file_dir, "r") as bnkfl_r:
         loaded_bnkfl_r = json.load(bnkfl_r)
         players_val = loaded_bnkfl_r[f"{message.author.name}#{message.author.discriminator}"]
-        await message.channel.send(f"{message.author}'s current bankroll is ${sum(players_val)}. Let the games begin! ('!c! bj stop' to end session)") ; sleep(delay)
+        await message.channel.send(f"{message.author}'s current bankroll is ${sum(players_val)}. Let the games begin!") ; sleep(delay)
         while True:
             while True:
               await message.channel.send("How much would you like to bet?") ; sleep(delay)
