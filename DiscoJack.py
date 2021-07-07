@@ -418,7 +418,7 @@ async def on_message(message):
   elif message.content.startswith("!c! set money") and message.author.name in allowed_users:
     with open(bank_file_dir, "r") as bnkfl_r:
       tmp_values = json.load(bnkfl_r )  
-    await message.channel.send(f"How much money would you like to give {message.content[13:]}?")
+    await message.channel.send(f"What should we set {message.content[13:].strip()}'s money to?")
     money_to_be_added = await client.wait_for('message')
     if money_to_be_added.content[0] == "$":
       money_to_be_added.content = money_to_be_added.content[1:]
@@ -428,7 +428,7 @@ async def on_message(message):
       await message.channel.send("That's not money...")
     with open(bank_file_dir, "w") as bnkfl_w:
       json.dump(tmp_values, bnkfl_w)
-    await message.channel.send(f"${money_to_be_added.content} has been added to {message.content[13:].strip()}'s account.")
+    await message.channel.send(f"{message.content[13:].strip()}'s account value has been set to ${money_to_be_added.content}.")
   elif message.content.startswith("!c! add user") and message.author.name in allowed_users:
       added_user = message.content.strip()[12:]
       with open(allowed_persons_dir, "a") as users:
