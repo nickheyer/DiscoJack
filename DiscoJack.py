@@ -7,7 +7,8 @@ from time import sleep
 import re
 import json
 
-TOKEN = "ENTER YOUR TOKEN HERE"
+TOKEN = "ODUzOTExNjM1Nzg0ODkyNDc2.YMcRLg.yOZ9TJMDzSJHwPuCZ3BAMRqLCqs"
+delay = 2
 
 intents = discord.Intents.all()
 client = discord.Client(intents = intents)
@@ -52,10 +53,23 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+  current_player = message.author
+  current_channel = message.channel.id
+  global delay
   with open(allowed_persons_dir, "r") as listed_users:
     allowed_users = listed_users.read()
   if message.author == client.user:
     return
+  elif message.content.startswith("!c! set delay") and message.author.name in allowed_users:
+    new_delay = message.content[13:].strip()
+    try:
+      if int(new_delay) >= 0 and int(new_delay) <= 10:
+        delay = int(new_delay)
+        await message.channel.send(f"Delay set to {delay}")
+      else:
+        await message.channel.send(f"Invalid input...")
+    except:
+      await message.channel.send("Invalid input...")
   elif message.content.startswith("!c! blackjack"):
       #For BlackJack functionality
       class Cards:
@@ -210,19 +224,24 @@ async def on_message(message):
       with open(bank_file_dir, "r") as bnkfl_r:
         loaded_bnkfl_r = json.load(bnkfl_r)
         players_val = loaded_bnkfl_r[f"{message.author.name}#{message.author.discriminator}"]
-        await message.channel.send(f"{message.author}'s current bankroll is ${sum(players_val)}. Let the games begin! ('!c! bj stop' to end session)") ; sleep(1)
+        await message.channel.send(f"{message.author}'s current bankroll is ${sum(players_val)}. Let the games begin! ('!c! bj stop' to end session)") ; sleep(delay)
         while True:
-            await message.channel.send("How much would you like to bet?")
-            bet = await client.wait_for('message')
-            try:
-              if bet.content[0] == "$":
-                bet.content = bet.content[1:]
-              ismoney = type(int(bet.content)) is int
-            except:
-              await message.channel.send("That isn't money...") ; sleep(3)
-              break
-            if sum(players_val) >= int(bet.content) and ismoney == True:
-              await message.channel.send(f"You bet: ${bet.content}")
+            while True:
+              await message.channel.send("How much would you like to bet?") ; sleep(delay)
+              bet = await client.wait_for('message', check=lambda message: message.author == current_player and message.channel.id == current_channel)
+              player_bet = bet.content
+              try:
+                if player_bet[0] == "$":
+                  player_bet = player_bet[1:]
+                ismoney = type(int(player_bet)) is int and int(player_bet)>0
+                if ismoney == True:
+                  break
+                elif ismoney == False:
+                  await message.channel.send("Invalid input...")
+              except:
+                await message.channel.send("That isn't money...") ; sleep(delay)
+            if sum(players_val) >= int(player_bet):
+              await message.channel.send(f"You bet: ${player_bet}")
               #Generating dealer cards
               dealer_first = random.randint(1,52)
               for x in list_of_cards:
@@ -295,66 +314,73 @@ async def on_message(message):
                   else:
                     pass  
               player_total = player_first_val + player_second_val
-              await message.channel.send("Drawing dealers cards...") ; sleep(2)
+              await message.channel.send("Drawing dealers cards...") ; sleep(delay)
               await message.channel.send(f"Dealers first card is {dealer_first}")
-              await message.channel.send(file = dealer_first_face) ; sleep(3)
-              await message.channel.send(f"Dealer draws second card and places it face down...") ; sleep(2)
-              await message.channel.send(file = blank_card) ; sleep(1)
-              await message.channel.send(f"Dealer is showing {dealer_first_val}") ; sleep(3)  
+              await message.channel.send(file = dealer_first_face) ; sleep(delay)
+              await message.channel.send(f"Dealer draws second card and places it face down...") ; sleep(delay)
+              await message.channel.send(file = blank_card) ; sleep(delay)
+              await message.channel.send(f"Dealer is showing {dealer_first_val}") ; sleep(delay)  
               if dealer_total == 21 and player_total != 21:
-                await message.channel.send("Dealer flips their face down card...") ; sleep(2)
-                await message.channel.send(f"Dealers other card is {dealer_second}") ; sleep(2)
-                await message.channel.send(file = dealer_second_face) ; sleep(3)
-                await message.channel.send(f"Dealer is showing {dealer_total}") ; sleep(2)
-                players_val.append(-int(bet.content))
-                await message.channel.send(f"{dealer_total} means dealer gets Blackjack! You lose ${bet.content} \nYour bankroll is ${sum(players_val)}")
+                await message.channel.send("Dealer flips their face down card...") ; sleep(delay)
+                await message.channel.send(f"Dealers other card is {dealer_second}") ; sleep(delay)
+                await message.channel.send(file = dealer_second_face) ; sleep(delay)
+                await message.channel.send(f"Dealer is showing {dealer_total}") ; sleep(delay)
+                players_val.append(-int(player_bet))
+                await message.channel.send(f"{dealer_total} means dealer gets Blackjack! You lose ${player_bet} \nYour bankroll is ${sum(players_val)}")
                 break
-              await message.channel.send("Drawing players cards...") ; sleep(2)
+              await message.channel.send("Drawing players cards...") ; sleep(delay)
               await message.channel.send(f"Players first card is {player_first}")
-              await message.channel.send(file = player_first_face) ; sleep(2)
+              await message.channel.send(file = player_first_face) ; sleep(delay)
               await message.channel.send(f"Players second card is {player_second}")
-              await message.channel.send(file = player_second_face) ; sleep(2)
-              await message.channel.send(f"Player is showing {player_total}") ; sleep(3)
+              await message.channel.send(file = player_second_face) ; sleep(delay)
+              await message.channel.send(f"Player is showing {player_total}") ; sleep(delay)
               cards_played = [player_first, player_second, dealer_first, dealer_second]
+              hit_count = 0
               while player_total < 21:
-                await message.channel.send("Would you like to hit or stand?")
-                player_choice = await client.wait_for('message')
-                if "hit" in player_choice.content.lower():
+                if hit_count == 0:
+                  await message.channel.send("Would you like to hit, stand, or doubledown?")
+                elif hit_count > 0:
+                  await message.channel.send("Would you like to hit or stand?")
+                player_choice = await client.wait_for('message', check=lambda message: message.author == current_player and message.channel.id == current_channel)
+                if "hit" in player_choice.content.lower() or ("doubledown" in player_choice.content.lower() and hit_count == 0):
                   player_addit = random.randint(1,52)
                   for x in list_of_cards:
                     if x.number == player_addit and x not in cards_played:
                       player_addit = x
                       cards_played.append(x)
                       await message.channel.send(f"Player drew {x}") 
-                      await message.channel.send(file = x.face); sleep(3)
+                      await message.channel.send(file = x.face); sleep(delay)
                       #Converting Aces from 11 to 1 if an 11 would cause bust
                       if player_total > 10 and x.value == 11:
                         player_total += 1
+                        hit_count += 1
                       else:
                         player_total += x.value
-                      await message.channel.send(f"Player total is now {player_total}") ; sleep(3)
-                    else:
-                      pass
+                        await message.channel.send(f"Player total is now {player_total}") ; sleep(delay)
+                        hit_count += 1
+                if "doubledown" in player_choice.content.lower() and hit_count == 0:
+                  player_bet = str(int(player_bet) * 2)
+                  break
                 elif "stand" in player_choice.content.lower():
                   break
                 else:
-                  await message.channel.send("Invalid input...") ; sleep(2)
+                  await message.channel.send("Invalid input...") ; sleep(delay)
                   pass
               if player_total == 21 and dealer_total != 21:
-                players_val.append(int(round(float(bet.content) * 1.5)))
-                print(f"{player_total} means Blackjack! You win ${int(round(float(bet.content) * 1.5))} Your bankroll is ${sum(players_val)}")
+                players_val.append(int(round(float(player_bet) * 1.5)))
+                await message.channel.send(f"{player_total} means Blackjack! You win ${int(round(float(player_bet) * 1.5))} Your bankroll is ${sum(players_val)}")
                 break              
               #Player bust condition
               if player_total > 21:
-                await message.channel.send(f"{player_total} means you BUST. You lost ${bet.content}") ; sleep(1)
-                players_val.append(-int(bet.content))
+                await message.channel.send(f"{player_total} means you BUST. You lost ${player_bet}") ; sleep(delay)
+                players_val.append(-int(player_bet))
                 await message.channel.send(f"Your bankroll is now ${sum(players_val)}")
                 break
               #Dealer flip
-              await message.channel.send("Dealer flips their face down card...") ; sleep(2)
+              await message.channel.send("Dealer flips their face down card...") ; sleep(delay)
               await message.channel.send(f"Dealers other card is {dealer_second}")
-              await message.channel.send(file = dealer_second_face) ; sleep(3)
-              await message.channel.send(f"Dealer is showing {dealer_total}") ; sleep(3)
+              await message.channel.send(file = dealer_second_face) ; sleep(delay)
+              await message.channel.send(f"Dealer is showing {dealer_total}") ; sleep(delay)
               #Dealer additional draws to 17
               while dealer_total < 17:
                 dealer_addit = random.randint(1,52)
@@ -362,7 +388,7 @@ async def on_message(message):
                   if x.number == dealer_addit and x not in cards_played:
                     await message.channel.send(f"Dealers draws {x}")
                     cards_played.append(x)
-                    await message.channel.send(file = x.face) ; sleep(2)
+                    await message.channel.send(file = x.face) ; sleep(delay)
                     await message.channel.send(f"Dealer's total is {dealer_total + x.value}")
                     #Converting Aces from 11 to 1 if an 11 would cause bust
                     if dealer_total > 10 and x.value == 11:
@@ -373,30 +399,30 @@ async def on_message(message):
                     pass                     
               #Dealer bust condition
               if dealer_total > 21:
-                await message.channel.send(f"{dealer_total} means dealer BUST. You win ${bet.content}") ; sleep(1)
-                players_val.append(int(bet.content))
+                await message.channel.send(f"{dealer_total} means dealer BUST. You win ${player_bet}") ; sleep(delay)
+                players_val.append(int(player_bet))
                 await message.channel.send(f"Your bankroll is now ${sum(players_val)}")
                 break              
               #Dealer win condition
               elif dealer_total > player_total:
-                await message.channel.send(f"{dealer_total} means dealer WINS, you lost ${bet.content}") ; sleep(1)
-                players_val.append(-int(bet.content))
+                await message.channel.send(f"{dealer_total} means dealer WINS, you lost ${player_bet}") ; sleep(delay)
+                players_val.append(-int(player_bet))
                 await message.channel.send(f"Your bankroll is now ${sum(players_val)}")
                 break          
               elif dealer_total == player_total:
-                await message.channel.send(f"{dealer_total} means PUSH, your bet has been returned back to you.") ; sleep(1)
+                await message.channel.send(f"{dealer_total} means PUSH, your bet has been returned back to you.") ; sleep(delay)
                 await message.channel.send(f"Your bankroll is ${sum(players_val)}")    
                 break          
               #Player win condition
               elif dealer_total < player_total:
-                await message.channel.send(f"{player_total} means player WINS, you win ${bet.content}!") ; sleep(1)
-                players_val.append(int(bet.content))
+                await message.channel.send(f"{player_total} means player WINS, you win ${player_bet}!") ; sleep(delay)
+                players_val.append(int(player_bet))
                 await message.channel.send(f"Your bankroll is now ${sum(players_val)}") 
                 break            
               else:
                 await message.channel.send(f"Invalid input...")
                 break
-            elif bet.content == "!c! bj stop":
+            elif player_bet == "!c! bj stop":
               break
             else:
               await message.channel.send("You don't have enough money!")
@@ -421,7 +447,7 @@ async def on_message(message):
     while True:  
       if message.content[13:].strip() in tmp_values.keys():
         await message.channel.send(f"What should we set {message.content[13:].strip()}'s money to?")
-        money_to_be_added = await client.wait_for('message')
+        money_to_be_added = await client.wait_for('message',check=lambda message: message.author == current_player and message.channel.id == current_channel)
         if money_to_be_added.content[0] == "$":
           money_to_be_added.content = money_to_be_added.content[1:]
         try:
@@ -437,10 +463,13 @@ async def on_message(message):
         await message.channel.send(f"{message.content[13:].strip()} is not a valid player, check '!c! scoreboard for all players associated with {client.user}'")
         break
   elif message.content.startswith("!c! add user") and message.author.name in allowed_users:
-      added_user = message.content.strip()[12:]
-      with open(allowed_persons_dir, "a") as users:
-        users.write(f"\n{added_user.strip()}")
-      await message.channel.send(f"{added_user.strip()} has been appended to allowed persons.")
+      added_user = message.content.strip()[13:]
+      if message.author.name in allowed_users:
+        with open(allowed_persons_dir, "a") as users:
+          users.write(f"{added_user.strip()}")
+        await message.channel.send(f"{added_user.strip()} has been appended to allowed persons.")
+      else:
+        await message.channel.send(f"Sorry! {added_user.strip()} is not approved for this.")
   elif message.content.startswith("!c! list users"):
       await message.channel.send(f"These users can access the player bank: \n{allowed_users}")
   elif message.content.startswith("!help") or message.content.startswith("!commands"):
