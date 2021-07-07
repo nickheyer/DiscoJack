@@ -328,7 +328,7 @@ async def on_message(message):
                       await message.channel.send(f"Player drew {x}") 
                       await message.channel.send(file = x.face); sleep(3)
                       #Converting Aces from 11 to 1 if an 11 would cause bust
-                      if player_total > 11 and x.value == 11:
+                      if player_total > 10 and x.value == 11:
                         player_total += 1
                       else:
                         player_total += x.value
@@ -364,7 +364,11 @@ async def on_message(message):
                     cards_played.append(x)
                     await message.channel.send(file = x.face) ; sleep(2)
                     await message.channel.send(f"Dealer's total is {dealer_total + x.value}")
-                    dealer_total += x.value
+                    #Converting Aces from 11 to 1 if an 11 would cause bust
+                    if dealer_total > 10 and x.value == 11:
+                      dealer_total += 1
+                    else:
+                      dealer_total += x.value
                   else:
                     pass                     
               #Dealer bust condition
