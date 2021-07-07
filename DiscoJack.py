@@ -7,7 +7,7 @@ from time import sleep
 import re
 import json
 
-TOKEN = "ODUzOTExNjM1Nzg0ODkyNDc2.YMcRLg.yOZ9TJMDzSJHwPuCZ3BAMRqLCqs"
+TOKEN = "ENTER TOKEN HERE"
 delay = 2
 
 intents = discord.Intents.all()
