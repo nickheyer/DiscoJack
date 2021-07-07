@@ -473,7 +473,7 @@ async def on_message(message):
   elif message.content.startswith("!c! list users"):
       await message.channel.send(f"These users can access the player bank: \n{allowed_users}")
   elif message.content.startswith("!help") or message.content.startswith("!commands"):
-    await message.channel.send('"!c! add user{add user here\}"\n"!c! list users"\n"!c! blackjack"\n"!c! set money {add user here\}"\n"!c! scoreboard"\n"!help"\n"!commands".')
+    await message.channel.send('"!c! add user{add user here\}"\n"!c! list users"\n"!c! blackjack"\n"!c! set money {add user here\}"\n"!c! set delay {delay\}"\n"!c! scoreboard"\n"!help"\n"!commands".')
   else:
     return
 
