@@ -417,18 +417,25 @@ async def on_message(message):
     await message.channel.send(file = discord.File(f"{script_path}\\score_board.txt"))   
   elif message.content.startswith("!c! set money") and message.author.name in allowed_users:
     with open(bank_file_dir, "r") as bnkfl_r:
-      tmp_values = json.load(bnkfl_r )  
-    await message.channel.send(f"What should we set {message.content[13:].strip()}'s money to?")
-    money_to_be_added = await client.wait_for('message')
-    if money_to_be_added.content[0] == "$":
-      money_to_be_added.content = money_to_be_added.content[1:]
-    try:
-      tmp_values[message.content[13:].strip()] = [int(money_to_be_added.content)]
-    except:
-      await message.channel.send("That's not money...")
-    with open(bank_file_dir, "w") as bnkfl_w:
-      json.dump(tmp_values, bnkfl_w)
-    await message.channel.send(f"{message.content[13:].strip()}'s account value has been set to ${money_to_be_added.content}.")
+      tmp_values = json.load(bnkfl_r)
+    while True:  
+      if message.content[13:].strip() in tmp_values.keys():
+        await message.channel.send(f"What should we set {message.content[13:].strip()}'s money to?")
+        money_to_be_added = await client.wait_for('message')
+        if money_to_be_added.content[0] == "$":
+          money_to_be_added.content = money_to_be_added.content[1:]
+        try:
+          tmp_values[message.content[13:].strip()] = [int(money_to_be_added.content)]
+        except:
+          await message.channel.send("That's not money...")
+          break
+        with open(bank_file_dir, "w") as bnkfl_w:
+          json.dump(tmp_values, bnkfl_w)
+        await message.channel.send(f"{message.content[13:].strip()}'s account value has been set to ${money_to_be_added.content}.")
+        break
+      else:
+        await message.channel.send(f"{message.content[13:].strip()} is not a valid player, check '!c! scoreboard for all players associated with {client.user}'")
+        break
   elif message.content.startswith("!c! add user") and message.author.name in allowed_users:
       added_user = message.content.strip()[12:]
       with open(allowed_persons_dir, "a") as users:
