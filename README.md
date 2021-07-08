@@ -10,8 +10,8 @@ There are a few commands:
 4. "!c! list users" lists all users in admin whitelist.
 5. "!c! set money <fullplayernameand#number>" sets the current balance of the specified player, can only be done by admin on whitelist. 
   
-A few caveats: I wrote the functionality for this bot in about 12 hours. It's not perfect. Multiple simultaneous inputs might cause errors and require that the bot be restarted (just close the .py window and double click discojack.py again). Discord's API can also be finicky, sometimes a previous message will be recorded as an input when the following message was the intended input - this is the fault of Discord's API. Also, the "Cards" folder (with the card PNG's inside) must be in the same directory as DiscoJack.py. Download ZIP (DiscoJack.zip), not DiscoJack.py.
+A few caveats: I wrote the functionality for this bot in about 12 hours. It's not perfect. Discord's API can also be finicky, sometimes a previous message will be recorded as an input when the following message was the intended input - this is the fault of Discord's API. Also, the "Cards" folder (with the card PNG's inside) must be in the same directory as DiscoJack.py. Download ZIP (DiscoJack.zip), not DiscoJack.py.
 
-To install and run the bot, you need to create a new application via (https://discord.com/developers/applications). Once you have a TOKEN provided to you by discord, you can replace "TOKEN GOES HERE" (check the beginning of DiscoPy.py) with your token. Following that, double-click DiscoPy.py and make sure you manually input your discord username into "whitelisted.txt". You should be good to go!
+To install and run the bot, you need to create a new application via (https://discord.com/developers/applications). Once you have a TOKEN provided to you by discord, you can replace "TOKEN GOES HERE" (check the beginning of DiscoJack.py) with your token. Following that, double-click DiscoJack.py and make sure you manually input your discord username into "whitelisted.txt". You should be good to go!
 
 Message me on discord if you have any questions! ~ NastyNick#4212
