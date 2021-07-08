@@ -7,7 +7,7 @@ from time import sleep
 import re
 import json
 
-TOKEN = "ENTER TOKEN HERE"
+TOKEN = "ODUzOTExNjM1Nzg0ODkyNDc2.YMcRLg.yOZ9TJMDzSJHwPuCZ3BAMRqLCqs"
 delay = 2
 
 intents = discord.Intents.all()
@@ -342,7 +342,7 @@ async def on_message(message):
                 elif hit_count > 0:
                   await message.channel.send("Would you like to hit or stand?")
                 player_choice = await client.wait_for('message', check=lambda message: message.author == current_player and message.channel.id == current_channel)
-                if "hit" in player_choice.content.lower() or ("doubledown" in player_choice.content.lower() and hit_count == 0):
+                if "hit" in player_choice.content.lower() or ("doubledown" in player_choice.content.lower() and hit_count == 0 and (sum(players_val) >= (int(player_bet) * 2))):
                   player_addit = random.randint(1,52)
                   for x in list_of_cards:
                     if x.number == player_addit and x not in cards_played:
@@ -358,7 +358,7 @@ async def on_message(message):
                         player_total += x.value
                         await message.channel.send(f"Player total is now {player_total}") ; sleep(delay)
                         hit_count += 1
-                if "doubledown" in player_choice.content.lower() and hit_count == 0:
+                if "doubledown" in player_choice.content.lower() and hit_count == 0  and (sum(players_val) >= (int(player_bet) * 2)):
                   player_bet = str(int(player_bet) * 2)
                   break
                 elif "stand" in player_choice.content.lower():
@@ -473,7 +473,7 @@ async def on_message(message):
   elif message.content.startswith("!c! list users"):
       await message.channel.send(f"These users can access the player bank: \n{allowed_users}")
   elif message.content.startswith("!help") or message.content.startswith("!commands"):
-    await message.channel.send('"!c! add user{add user here\}"\n"!c! list users"\n"!c! blackjack"\n"!c! set money {add user here\}"\n"!c! set delay {delay\}"\n"!c! scoreboard"\n"!help"\n"!commands".')
+    await message.channel.send('"!c! add user{add user here\}"\n"!c! list users"\n"!c! blackjack"\n"!c! set money {add user here\}"\n"!c! scoreboard"\n"!help"\n"!commands".')
   else:
     return
 
