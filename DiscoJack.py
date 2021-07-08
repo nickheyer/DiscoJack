@@ -7,8 +7,8 @@ from time import sleep
 import re
 import json
 
-TOKEN = "ODUzOTExNjM1Nzg0ODkyNDc2.YMcRLg.yOZ9TJMDzSJHwPuCZ3BAMRqLCqs"
-delay = 2
+TOKEN = "TOKEN GOES HERE"
+delay = 1
 
 intents = discord.Intents.all()
 client = discord.Client(intents = intents)
@@ -104,6 +104,8 @@ async def on_message(message):
               elif face == "🃎":
                     self.face = (discord.File(f"{script_path}\\Cards\\KD.png"))
             def __repr__(self):
+              if self.value == 11:
+                return (f"{self.name} - 1/11")
               return (f"{self.name} - {self.value}")
       #CARD DEFINITIONS
       #Diamonds
@@ -339,10 +341,10 @@ async def on_message(message):
               while player_total < 21:
                 if hit_count == 0:
                   await message.channel.send("Would you like to hit, stand, or doubledown?")
-                elif hit_count > 0:
+                else:
                   await message.channel.send("Would you like to hit or stand?")
                 player_choice = await client.wait_for('message', check=lambda message: message.author == current_player and message.channel.id == current_channel)
-                if "hit" in player_choice.content.lower() or ("doubledown" in player_choice.content.lower() and hit_count == 0 and (sum(players_val) >= (int(player_bet) * 2))):
+                if "hit" == player_choice.content.lower():
                   player_addit = random.randint(1,52)
                   for x in list_of_cards:
                     if x.number == player_addit and x not in cards_played:
@@ -350,26 +352,54 @@ async def on_message(message):
                       cards_played.append(x)
                       await message.channel.send(f"Player drew {x}") 
                       await message.channel.send(file = x.face); sleep(delay)
-                      #Converting Aces from 11 to 1 if an 11 would cause bust
+                      #Converting Aces from 11 to 1 if an 11 would cause bust               
+                      if player_first_val == 11 and (player_total + x.value) > 21:
+                        player_first_val = 1
+                        player_total +=  -10
+                      if player_second_val == 11 and (player_total + x.value) > 21:
+                        player_second_val = 1
+                        player_total +=  -10
                       if player_total > 10 and x.value == 11:
                         player_total += 1
                         hit_count += 1
                       else:
                         player_total += x.value
-                        await message.channel.send(f"Player total is now {player_total}") ; sleep(delay)
                         hit_count += 1
-                if "doubledown" in player_choice.content.lower() and hit_count == 0  and (sum(players_val) >= (int(player_bet) * 2)):
+                      await message.channel.send(f"Player total is now {player_total}") ; sleep(delay)
+                elif "doubledown" == player_choice.content.lower() and hit_count == 0  and (sum(players_val) >= (int(player_bet) * 2)):
                   player_bet = str(int(player_bet) * 2)
+                  player_addit = random.randint(1,52)
+                  for x in list_of_cards:
+                    if x.number == player_addit and x not in cards_played:
+                      player_addit = x
+                      cards_played.append(x)
+                      await message.channel.send(f"Player drew {x}") 
+                      await message.channel.send(file = x.face); sleep(delay)
+                      #Converting Aces from 11 to 1 if an 11 would cause bust               
+                      if player_first_val == 11 and (player_total + x.value) > 21:
+                        player_first_val = 1
+                        player_total += -10
+                      if player_second_val == 11 and (player_total + x.value) > 21:
+                        player_second_val = 1
+                        player_total += -10
+                      if player_total > 10 and x.value == 11:
+                        player_total += 1
+                        hit_count += 1
+                      else:
+                        player_total += x.value
+                        hit_count += 1
+                      await message.channel.send(f"Player total is now {player_total} and player bet is now ${player_bet}") ; sleep(delay)
+                      break
                   break
-                elif "stand" in player_choice.content.lower():
+                elif "stand" == player_choice.content.lower():
                   break
                 else:
                   await message.channel.send("Invalid input...") ; sleep(delay)
                   pass
-              if player_total == 21 and dealer_total != 21:
+              if player_total == 21 and dealer_total != 21 and hit_count == 0:
                 players_val.append(int(round(float(player_bet) * 1.5)))
                 await message.channel.send(f"{player_total} means Blackjack! You win ${int(round(float(player_bet) * 1.5))} Your bankroll is ${sum(players_val)}")
-                break              
+                break            
               #Player bust condition
               if player_total > 21:
                 await message.channel.send(f"{player_total} means you BUST. You lost ${player_bet}") ; sleep(delay)
@@ -388,13 +418,19 @@ async def on_message(message):
                   if x.number == dealer_addit and x not in cards_played:
                     await message.channel.send(f"Dealers draws {x}")
                     cards_played.append(x)
-                    await message.channel.send(file = x.face) ; sleep(delay)
-                    await message.channel.send(f"Dealer's total is {dealer_total + x.value}")
+                    await message.channel.send(file = x.face) ; sleep(delay)                   
                     #Converting Aces from 11 to 1 if an 11 would cause bust
+                    if dealer_first_val == 11 and (dealer_total + x.value) > 21:
+                        dealer_first_val = 1
+                        dealer_total += -10
+                    if dealer_second_val == 11 and (dealer_total + x.value) > 21:
+                        dealer_second_val = 1
+                        dealer_total += -10
                     if dealer_total > 10 and x.value == 11:
                       dealer_total += 1
                     else:
                       dealer_total += x.value
+                    await message.channel.send(f"Dealer's total is {dealer_total}")
                   else:
                     pass                     
               #Dealer bust condition
