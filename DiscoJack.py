@@ -337,7 +337,7 @@ async def on_message(message):
               await asyncio.sleep(delay)
               await message.channel.send(file = blank_card)
               await asyncio.sleep(delay)
-              await message.channel.send(f"Dealer is showing {dealer_first_val}")
+              await message.channel.send(f"Dealer is showing `{dealer_first_val}`")
               await asyncio.sleep(delay) 
               if dealer_total == 21 and player_total != 21:
                 await message.channel.send("Dealer flips their face down card...")
@@ -346,10 +346,10 @@ async def on_message(message):
                 await asyncio.sleep(delay)
                 await message.channel.send(file = dealer_second_face)
                 await asyncio.sleep(delay)
-                await message.channel.send(f"Dealer is showing {dealer_total}")
+                await message.channel.send(f"Dealer is showing `{dealer_total}`")
                 await asyncio.sleep(delay)
                 players_val.append(-int(player_bet))
-                await message.channel.send(f"{dealer_total} means dealer gets Blackjack! You lose ${player_bet} \nYour bankroll is ${sum(players_val)}")
+                await message.channel.send(f"`{dealer_total}` means dealer gets Blackjack! You lose ${player_bet} \nYour bankroll is ${sum(players_val)}")
                 break
               await message.channel.send("Drawing players cards...")
               await asyncio.sleep(delay)
@@ -359,7 +359,7 @@ async def on_message(message):
               await message.channel.send(f"Players second card is {player_second}")
               await message.channel.send(file = player_second_face)
               await asyncio.sleep(delay)
-              await message.channel.send(f"Player is showing {player_total}")
+              await message.channel.send(f"Player is showing `{player_total}`")
               await asyncio.sleep(delay)
               cards_played = [player_first, player_second, dealer_first, dealer_second]
               hit_count = 0
@@ -391,7 +391,7 @@ async def on_message(message):
                       else:
                         player_total += x.value
                         hit_count += 1
-                      await message.channel.send(f"Player total is now {player_total}")
+                      await message.channel.send(f"Player total is now `{player_total}`")
                       await asyncio.sleep(delay)
                 elif "doubledown" == player_choice.content.lower() and hit_count == 0  and (sum(players_val) >= (int(player_bet) * 2)):
                   player_bet = str(int(player_bet) * 2)
@@ -416,7 +416,7 @@ async def on_message(message):
                       else:
                         player_total += x.value
                         hit_count += 1
-                      await message.channel.send(f"Player total is now {player_total} and player bet is now ${player_bet}")
+                      await message.channel.send(f"Player total is now `{player_total}` and player bet is now ${player_bet}")
                       await asyncio.sleep(delay)
                       break
                   break
@@ -432,7 +432,7 @@ async def on_message(message):
                 break            
               #Player bust condition
               if player_total > 21:
-                await message.channel.send(f"{player_total} means you BUST. You lost ${player_bet}")
+                await message.channel.send(f"`{player_total}` means you BUST. You lost ${player_bet}")
                 await asyncio.sleep(delay)
                 players_val.append(-int(player_bet))
                 await message.channel.send(f"Your bankroll is now ${sum(players_val)}")
@@ -443,7 +443,7 @@ async def on_message(message):
               await message.channel.send(f"Dealers other card is {dealer_second}")
               await message.channel.send(file = dealer_second_face)
               await asyncio.sleep(delay)
-              await message.channel.send(f"Dealer is showing {dealer_total}")
+              await message.channel.send(f"Dealer is showing `{dealer_total}`")
               await asyncio.sleep(delay)
               #Dealer additional draws to 17
               while dealer_total < 17:
@@ -465,31 +465,31 @@ async def on_message(message):
                       dealer_total += 1
                     else:
                       dealer_total += x.value
-                    await message.channel.send(f"Dealer's total is {dealer_total}")
+                    await message.channel.send(f"Dealer's total is `{dealer_total}`")
                   else:
                     pass                     
               #Dealer bust condition
               if dealer_total > 21:
-                await message.channel.send(f"{dealer_total} means dealer BUST. You win ${player_bet}")
+                await message.channel.send(f"`{dealer_total}` means dealer BUST. You win ${player_bet}")
                 await asyncio.sleep(delay)
                 players_val.append(int(player_bet))
                 await message.channel.send(f"Your bankroll is now ${sum(players_val)}")
                 break              
               #Dealer win condition
               elif dealer_total > player_total:
-                await message.channel.send(f"{dealer_total} means dealer WINS, you lost ${player_bet}")
+                await message.channel.send(f"`{dealer_total}` means dealer WINS, you lost ${player_bet}")
                 await asyncio.sleep(delay)
                 players_val.append(-int(player_bet))
                 await message.channel.send(f"Your bankroll is now ${sum(players_val)}")
                 break          
               elif dealer_total == player_total:
-                await message.channel.send(f"{dealer_total} means PUSH, your bet has been returned back to you.")
+                await message.channel.send(f"`{dealer_total} `means PUSH, your bet has been returned back to you.")
                 await asyncio.sleep(delay)
                 await message.channel.send(f"Your bankroll is ${sum(players_val)}")    
                 break          
               #Player win condition
               elif dealer_total < player_total:
-                await message.channel.send(f"{player_total} means player WINS, you win ${player_bet}!")
+                await message.channel.send(f"`{player_total}` means player WINS, you win ${player_bet}!")
                 await asyncio.sleep(delay)
                 players_val.append(int(player_bet))
                 await message.channel.send(f"Your bankroll is now ${sum(players_val)}") 
@@ -621,11 +621,14 @@ async def on_message(message):
             possible_choices.extend(non_num_choices)
             red_slots = [3,12,7,18,9,14,1,16,5,23,30,36,27,34,25,21,19,32]
             black_slots = [26,35,28,29,22,31,20,33,24,10,8,11,13,6,17,2,4,15]
-            await message.channel.send("Choose a number (0-36), or red/black, or odd/even. What is your selection?")
+            await message.channel.send("```Here are your choices: \n1. A number in range 0-36\n2. 'Red' or 'Black'\n3. 'Odd' or 'Even'```")
+            r_table_msg = await message.channel.send(file = (discord.File(f"{script_path}\\RouletteWheel\\roulette_table.png")))
             await asyncio.sleep(delay)
             p_choice = await client.wait_for('message', check=lambda message: message.author == current_player and message.channel.id == current_channel and message.content in possible_choices)
             await asyncio.sleep(delay)
             await message.channel.send("Spinning wheel... no more bets!")
+            await asyncio.sleep(1)
+            await r_table_msg.delete()
             await message.channel.send(file = spin_gif, delete_after = 10.0)
             #Generating where the ball will land
             ball_lands = random.randint(0,36)
