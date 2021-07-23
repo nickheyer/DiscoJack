@@ -8,15 +8,18 @@ from time import sleep
 import re
 import json
 
-ini_txt = os.path.join(os.path.dirname(__file__), f'ini_values.txt')
+ini_json = os.path.join(os.path.dirname(__file__), f'ini_values.json')
+ini = {}
 try:
-  with open(ini_txt, "r") as token_r:
-    tok_val = token_r.read()
+  with open(ini_json, "r") as ini_r:
+    ini = json.load(ini_r)
 except:
-  tok_val = input("Before we can start, please enter your Discord API bot token here. \n")
-  with open(ini_txt, "w") as token_w:
-    token_w.write(tok_val)
-TOKEN = tok_val
+  ini['tok_val'] = input("Please enter your Discord API bot token here. \n")
+  ini['allow_repl'] = input("Allow players to add $50 to their account when it hits zero? ('yes' or 'no') \n")
+  ini['auth_user'] = [input("Please enter your full Discord username here (ex:'NastyNick#4212'). \n")]
+  with open(ini_json, "w") as ini_w:
+    json.dump(ini, ini_w)
+TOKEN = ini['tok_val']
 delay = 1
 
 intents = discord.Intents.all()
@@ -27,15 +30,9 @@ def rand_number(num):
   return random.randint(1, num)
 
 score_board_txt = os.path.join(os.path.dirname(__file__), f'score_board.txt')
-allowed_persons_dir = os.path.join(os.path.dirname(__file__), f'whitelisted.txt')
 bank_file_dir = os.path.join(os.path.dirname(__file__), f'bank_file.json')
 script_path = sys.path[0]
 
-
-with open(allowed_persons_dir, "a") as instance_2:
-  instance_2.write("")
-with open(score_board_txt, "a") as instance_3:
-  instance_3.write("")
 
 
 @client.event
@@ -65,11 +62,9 @@ async def on_message(message):
   current_player = message.author
   current_channel = message.channel.id
   global delay
-  with open(allowed_persons_dir, "r") as listed_users:
-    allowed_users = listed_users.read()
   if message.author == client.user:
     return
-  elif message.content.startswith("!c! set delay") and message.author.name in allowed_users:
+  elif message.content.startswith("!c! set delay") and (f"{message.author.name}#{message.author.discriminator}") in ini['auth_user']:
     new_delay = message.content[13:].strip()
     try:
       if int(new_delay) >= 0 and int(new_delay) <= 10:
@@ -235,6 +230,11 @@ async def on_message(message):
       with open(bank_file_dir, "r") as bnkfl_r:
         loaded_bnkfl_r = json.load(bnkfl_r)
         players_val = loaded_bnkfl_r[f"{message.author.name}#{message.author.discriminator}"]
+        if sum(players_val) == 0 and ini['allow_repl'] == 'yes':
+          await message.channel.send(f"It looks like your current balance is $0.")
+          await asyncio.sleep(delay)
+          await message.channel.send("Consider following the below GitHub while you enjoy this free $50. \nhttps://github.com/nickheyer")
+          players_val.append(50)
         await message.channel.send(f"{message.author}'s current bankroll is ${sum(players_val)}. Let the games begin!")
         await asyncio.sleep(delay)
         while True:
@@ -593,6 +593,12 @@ async def on_message(message):
     with open(bank_file_dir, "r") as bnkfl_r:
       loaded_bnkfl_r = json.load(bnkfl_r)
       players_val = loaded_bnkfl_r[f"{message.author.name}#{message.author.discriminator}"]
+      if sum(players_val) == 0 and ini['allow_repl'] == 'yes':
+          await message.channel.send(f"It looks like your current balance is $0.")
+          await asyncio.sleep(delay)
+          await message.channel.send("Consider following the below GitHub while you enjoy this free $50.\nhttps://github.com/nickheyer")
+          players_val.append(50)
+          await asyncio.sleep(delay)
       await message.channel.send(f"{message.author}'s current bankroll is ${sum(players_val)}. Let the games begin!")
       await asyncio.sleep(delay)
       #The entire game must be in this while loop
@@ -704,15 +710,17 @@ async def on_message(message):
   elif message.content.startswith("!c! scoreboard"):
     with open(bank_file_dir, "r") as bnkfl_r:
       bnkfile_dict = json.load(bnkfl_r)
+    bnkfile_sort = [[yy,xx] for xx,yy in bnkfile_dict.items()]
+    bnkfile_sort.sort(reverse = True)
     with open(score_board_txt, "w") as scrbrdtxt:
       count = 0
       scr_lst = ""
-      for x,y in bnkfile_dict.items():
+      for x,y in bnkfile_sort:
         count += 1
-        scr_lst += (f"{count}. {x} : ${sum(y)}\n")
+        scr_lst += (f"{count}. {y} : ${sum(x)}\n")
       scrbrdtxt.write(scr_lst)
     await message.channel.send(file = discord.File(f"{script_path}\\score_board.txt"))   
-  elif message.content.startswith("!c! set money") and message.author.name in allowed_users:
+  elif message.content.startswith("!c! set money") and (f"{message.author.name}#{message.author.discriminator}") in ini['auth_user']:
     with open(bank_file_dir, "r") as bnkfl_r:
       tmp_values = json.load(bnkfl_r)
     while True:  
@@ -733,16 +741,24 @@ async def on_message(message):
       else:
         await message.channel.send(f"{message.content[13:].strip()} is not a valid player, check '!c! scoreboard for all players associated with {client.user}'")
         break
-  elif message.content.startswith("!c! add user") and message.author.name in allowed_users:
+  elif message.content.startswith("!c! add user") and (f"{message.author.name}#{message.author.discriminator}") in ini['auth_user']:
       added_user = message.content.strip()[13:]
-      if message.author.name in allowed_users:
-        with open(allowed_persons_dir, "a") as users:
-          users.write(f"{added_user.strip()}")
-        await message.channel.send(f"{added_user.strip()} has been appended to allowed persons.")
+      if (f"{message.author.name}#{message.author.discriminator}") in ini['auth_user']:
+        if added_user in ini['auth_user']:
+          await message.channel.send(f"{added_user} already in whitelisted users.")
+        else:
+          ini['auth_user'].append(added_user)
+          with open(ini_json, "w") as ini_w:
+            json.dump(ini, ini_w)
+          await message.channel.send(f"{added_user} has been added to the whitelist.")
       else:
         await message.channel.send(f"Sorry! {added_user.strip()} is not approved for this.")
   elif message.content.startswith("!c! list users"):
-      await message.channel.send(f"These users can access the player bank: \n{allowed_users}")
+      auth_user_rep = ""
+      for x,y in enumerate(ini['auth_user']):
+            auth_user_rep += (f'{x+1}. {y}\n')
+      await message.channel.send(f"These users can access the player bank: \n```{auth_user_rep}```")
+      
   elif message.content.startswith("!help") or message.content.startswith("!commands"):
     await message.channel.send('"!c! add user{add user here\}"\n"!c! list users"\n"!c! blackjack"\n"!c! roulette"\n"!c! set money {add user here\}"\n"!c! scoreboard"\n"!help"\n"!commands".')
   else:
