@@ -12,6 +12,6 @@ There are a few commands:
 6. "!c! set money <fullplayernameand#number>" sets the current balance of the specified player, can only be done by admin on whitelist. 
   
 
-To install and run the bot, you need to create a new application via (https://discord.com/developers/applications). Once you have a TOKEN provided to you by discord, open DiscoJack.exe, you will be prompted to enter your Discord API Token. Following that, make sure you manually input your discord username into "whitelisted.txt" if you wish to use admin priveledges like setting a player's current money. You should be good to go!
+To install and run the bot, you need to create a new application via (https://discord.com/developers/applications). You also need discord.py installed (```pip install discord```). Once you have a TOKEN provided to you by discord, open DiscoJack.exe, you will be prompted to enter your Discord API Token. Following that, make sure you manually input your discord username into "whitelisted.txt" if you wish to use admin priveledges like setting a player's current money. You should be good to go!
 
 Message me on discord if you have any questions! ~ NastyNick#4212
