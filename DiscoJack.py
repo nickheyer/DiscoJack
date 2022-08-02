@@ -1,14 +1,21 @@
 import asyncio
 import discord
 import random
-from pprint import pprint
 import sys
 import os
-from time import sleep
-import re
 import json
+from zipfile import ZipFile
 
-ini_json = os.path.join(os.path.dirname(__file__), f'ini_values.json')
+def get_file_path(file_name):
+  return os.path.join(os.path.dirname(__file__), file_name)
+
+if os.path.exists(get_file_path('DiscoJack_Assets.zip')):
+  with ZipFile('DiscoJack_Assets.zip', 'r') as zipObj:
+   # Extract all the contents of zip file in current directory
+    zipObj.extractall()
+  os.remove('DiscoJack_Assets.zip')
+
+ini_json = get_file_path("ini_values.json")
 ini = {}
 try:
   with open(ini_json, "r") as ini_r:
@@ -29,11 +36,9 @@ embed = discord.Embed()
 def rand_number(num):
   return random.randint(1, num)
 
-score_board_txt = os.path.join(os.path.dirname(__file__), f'score_board.txt')
-bank_file_dir = os.path.join(os.path.dirname(__file__), f'bank_file.json')
+score_board_txt = get_file_path('score_board.txt')
+bank_file_dir = get_file_path('bank_file.json')
 script_path = sys.path[0]
-
-
 
 @client.event
 async def on_ready():
@@ -420,6 +425,8 @@ async def on_message(message):
                       await asyncio.sleep(delay)
                       break
                   break
+                elif "doubledown" == player_choice.content.lower() and hit_count == 0  and (sum(players_val) < (int(player_bet) * 2)):
+                  await message.channel.send(f"Not enough funds in your account to double-down!")
                 elif "stand" == player_choice.content.lower():
                   break
                 else:
@@ -759,8 +766,8 @@ async def on_message(message):
             auth_user_rep += (f'{x+1}. {y}\n')
       await message.channel.send(f"These users can access the player bank: \n```{auth_user_rep}```")
       
-  elif message.content.startswith("!help") or message.content.startswith("!commands"):
-    await message.channel.send('"!c! add user{add user here\}"\n"!c! list users"\n"!c! blackjack"\n"!c! roulette"\n"!c! set money {add user here\}"\n"!c! scoreboard"\n"!help"\n"!commands".')
+  elif message.content.startswith("!c! help") or message.content.startswith("!commands"):
+    await message.channel.send('"!c! add user{add user here\}"\n"!c! list users"\n"!c! blackjack"\n"!c! roulette"\n"!c! set money {add user here\}"\n"!c! scoreboard"\n"!c! help"')
   else:
     return
 
