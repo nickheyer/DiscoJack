@@ -36,8 +36,8 @@ Running `DiscoJack.py` performs a few actions when running for the first time.
   1. Unpacks DiscoFlix_assets.zip for later use by bot. 
   2. Creates a ini file, where it stores and uses values like tokens, settings, etc.
   3. Creates a "bank" file, where all of your servers discord members are stored alongside a dollar amount, aka their bankroll. 
-    i. This is where the "intents" are being used. Discord's api needs intents declared within the code and the dashboard, see [here](#further-notes).
-    ii. Intents are required for guild/channel/member checking. Discord bots don't actually see members of a server unless you declare these intents.
+     - This is where the "intents" are being used. Discord's api needs intents declared within the code and the dashboard, see [here](#further-notes).
+     - Intents are required for guild/channel/member checking. Discord bots don't actually see members of a server unless you declare these intents.
 
 
 There are a few commands:
